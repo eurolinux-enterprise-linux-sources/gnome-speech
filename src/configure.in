@@ -1,0 +1,574 @@
+AC_INIT(ChangeLog)
+
+GNOME_SPEECH_MAJOR_VERSION=0
+GNOME_SPEECH_MINOR_VERSION=4
+GNOME_SPEECH_MICRO_VERSION=25
+GNOME_SPEECH_INTERFACE_AGE=0
+GNOME_SPEECH_BINARY_AGE=0
+GNOME_SPEECH_VERSION="$GNOME_SPEECH_MAJOR_VERSION.$GNOME_SPEECH_MINOR_VERSION.$GNOME_SPEECH_MICRO_VERSION"
+AM_INIT_AUTOMAKE(gnome-speech, $GNOME_SPEECH_VERSION)
+AC_SUBST(GNOME_SPEECH_MAJOR_VERSION)
+AC_SUBST(GNOME_SPEECH_MINOR_VERSION)
+AC_SUBST(GNOME_SPEECH_MICRO_VERSION)
+AC_SUBST(GNOME_SPEECH_INTERFACE_AGE)
+AC_SUBST(GNOME_SPEECH_BINARY_AGE)
+
+# libtool versioning
+LT_CURRENT=7
+LT_REVISION=1
+LT_AGE=0
+LT_VERSION_INFO='-version-info ${LT_CURRENT}:${LT_REVISION}:${LT_AGE}'
+AC_SUBST(LT_VERSION_INFO)
+AC_SUBST(LT_RELEASE)
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+
+dnl Specify a header configuration file
+AM_CONFIG_HEADER(config.h)
+
+dnl Initialize maintainer mode
+AM_MAINTAINER_MODE
+
+
+dnl Checks for programs
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_ISC_POSIX
+
+GNOME_COMMON_INIT
+GNOME_COMPILE_WARNINGS(maximum)
+AC_SUBST(CFLAGS)
+
+
+dnl Initialize libtool
+AM_DISABLE_STATIC
+AM_PROG_LIBTOOL
+
+dnl Checks for libraries
+PKG_CHECK_MODULES(ORBIT, ORBit-2.0 >= 2.3.94)
+AC_SUBST(ORBIT_CFLAGS)
+AC_SUBST(ORBIT_LIBS)
+
+PKG_CHECK_MODULES(gnome_speech, bonobo-activation-2.0 >= 0.9.1 libbonobo-2.0 >= 1.97.0 ORBit-2.0 >= 2.3.94 gobject-2.0)
+AC_SUBST(gnome_speech_LIBS)
+AC_SUBST(gnome_speech_CFLAGS)
+
+dnl orbit-idl.
+ORBIT_IDL="`$PKG_CONFIG --variable=orbit_idl ORBit-2.0`"
+AC_SUBST(ORBIT_IDL)
+
+dnl solaris has socket functions in libsocket
+AC_CHECK_FUNC(socket, have_libsocket=yes, have_libsocket=no)
+if test "$have_libsocket" = "yes"; then
+    AC_DEFINE(HAVE_LIBSOCKET, 1, [Define if socket and associated functions are available.])
+else
+    AC_CHECK_LIB(socket, socket, have_libsocket=yes, have_libsocket=no)
+    if test "$have_libsocket" = "yes"; then
+        AC_DEFINE(HAVE_LIBSOCKET, 1, [Define if socket and associated functions are available.])
+        LIBS="$LIBS -lnsl -lsocket -lgen"
+    fi
+fi
+if test "$have_libsocket" = "no" ; then
+    AC_MSG_ERROR([Couldn't find required function socket]);
+fi
+
+dnl Bonobo and Bonobo-Activation idl files
+BONOBO_ACTIVATION_IDL_DIR="`$PKG_CONFIG --variable=idldir bonobo-activation-2.0`"
+LIBBONOBO_IDL_DIR="`$PKG_CONFIG --variable=idldir libbonobo-2.0`"
+AC_SUBST(BONOBO_ACTIVATION_IDL_DIR)
+AC_SUBST(LIBBONOBO_IDL_DIR)
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+
+# The various speech drivers can only be built if the appropriate libs for each are installed
+
+# Check to see if we should build the festival driver
+#
+AC_ARG_WITH([festival], 
+            AC_HELP_STRING([--with-festival],
+			   [build festival driver]),
+            [case "$withval" in
+	        yes) build_festival=true;;
+		no)  build_festival=false;;
+		*)   AC_MSG_ERROR(bad value $withval for --with-festival) ;;
+            esac],
+            [build_festival=true])
+AM_CONDITIONAL(BUILD_FESTIVAL_DRIVER, test "x$build_festival" = "xtrue")
+
+# Check to see if we should build the speech-dispatcher driver
+#
+AC_ARG_WITH([speech-dispatcher], 
+            AC_HELP_STRING([--with-speech-dispatcher],
+			   [build speech-dispatcher driver]),
+            [case "$withval" in
+	        yes) build_speech_dispatcher=true;;
+		no)  build_speech_dispatcher=false;;
+		*)   AC_MSG_ERROR(bad value $withval for --with-speech-dispatcher) ;;
+            esac],
+            [build_speech_dispatcher=false])
+AM_CONDITIONAL(BUILD_SPEECH_DISPATCHER_DRIVER,
+               test "x$build_speech_dispatcher" = "xtrue")
+
+# Check to see if we should build the Viavoice driver
+
+AC_ARG_WITH(viavoice_dir,
+            AC_HELP_STRING([--with-viavoice-dir=PATH],
+                           [Specify path to Viavoice]),
+            [if test "$withval" = "no" ; then
+                 build_viavoice=no;
+             fi])
+
+if test x$build_viavoice != xno ; then
+    if test x$with_viavoice_dir != x ; then
+        viavoice_LIBS="-L$with_viavoice_dir/lib -libmeci"
+        viavoice_INCLUDES="-I$with_viavoice_dir/inc"
+    else
+        AC_CHECK_LIB(ibmeci, eciNew, viavoice_LIBS=-libmeci)
+        viavoice_INCLUDES="-I/opt/IBM/ibmtts/inc"
+    fi
+    AC_SUBST(viavoice_LIBS)
+    AC_SUBST(viavoice_INCLUDES)
+fi
+AM_CONDITIONAL(BUILD_VIAVOICE_DRIVER, test "x$viavoice_LIBS" != "x")
+
+# Check to see if we should build the Loquendo driver
+
+AC_ARG_WITH(loquendo_dir,
+            AC_HELP_STRING([--with-loquendo-dir=PATH],
+                           [Specify path to Loquendo]),
+            [if test "$withval" = "no" ; then
+                 build_loquendo=no;
+             fi])
+
+if test x$build_loquendo != xno ; then
+    if test x$with_loquendo_dir != x ; then
+        loquendo_LIBS="$with_loquendo_dir/lib/LoqTTS6.so"
+        loquendo_INCLUDES="-I$with_loquendo_dir/include"
+    else
+	    AC_CHECK_LIB(LoqTTS6,ttsNewInstance, loquendo_LIBS=-lLoqTTS6.so)
+        loquendo_INCLUDES="-I/usr/local/src/Loquendo/LTTS/include"
+    fi
+    AC_SUBST(loquendo_LIBS)
+    AC_SUBST(loquendo_INCLUDES)
+fi
+AM_CONDITIONAL(BUILD_LOQUENDO_DRIVER, test "x$loquendo_LIBS" != "x")
+
+
+# Check to see if we should build the Dectalk driver
+AC_ARG_WITH(dectalk_dir,
+            AC_HELP_STRING([--with-dectalk-dir=PATH],
+                           [Specify path to DECTalk]),
+            [if test "$withval" = "no" ; then
+                 build_dectalk=no;
+             fi])
+
+if test x$build_dectalk != xno ; then
+    if test x$with_dectalk_dir != x ; then
+        dectalk_LIBS="-L$with_dectalk_dir/lib -ltts"
+        dectalk_INCLUDES="-I$with_dectalk_dir/include"
+    else
+	    AC_CHECK_LIB(tts, TextToSpeechSync, dectalk_LIBS=-ltts)
+        dectalk_INCLUDES=""
+    fi
+    AC_SUBST(dectalk_LIBS)
+    AC_SUBST(dectalk_INCLUDES)
+fi
+AM_CONDITIONAL(BUILD_DECTALK_DRIVER, test "x$dectalk_LIBS" != "x")
+
+# Check to see if we should build the Swift driver
+AC_ARG_WITH(swift_dir,
+            AC_HELP_STRING([--with-swift-dir=PATH],
+                           [Specify path to Swift]),
+            [if test "$withval" = "no" ; then
+                 build_swift=no;
+             fi])
+
+if test x$build_swift != xno ; then
+    if test x$with_swift_dir == x ; then
+        # Check default location /opt/swift
+        with_swift_dir="/opt/swift"
+    fi
+
+    AC_CHECK_FILE("$with_swift_dir/bin/swift", swift_bin="$with_swift_dir/bin/swift")
+    if test x$swift_bin != x ; then
+        swift_LIBS="-L$with_swift_dir/lib -lswift -lm"
+        swift_INCLUDEDIR="$with_swift_dir/include"
+    fi
+
+    AC_SUBST(swift_LIBS)
+    AC_SUBST(swift_INCLUDEDIR)
+fi
+AM_CONDITIONAL(BUILD_SWIFT_DRIVER, test "x$swift_LIBS" != "x")
+
+# Check to see if we should build the Theta driver
+AC_ARG_WITH(theta_dir,
+            AC_HELP_STRING([--with-theta-dir=PATH],
+                           [Specify path to Theta]),
+            [if test "$withval" = "no" ; then
+                 build_theta=no;
+             fi])
+
+if test x$build_theta != xno ; then
+    if test x$with_theta_dir == x ; then
+        # Check default location /opt/theta
+        with_theta_dir="/opt/theta"
+    fi
+
+    AC_CHECK_FILE("$with_theta_dir/bin/theta-config", theta_config="$with_theta_dir/bin/theta-config")
+    if test x$theta_config != x ; then
+        theta_LIBS=`$theta_config --libs`
+        theta_INCLUDES=`$theta_config --cflags`/swift
+    fi
+
+    AC_SUBST(theta_LIBS)
+    AC_SUBST(theta_INCLUDES)
+fi
+AM_CONDITIONAL(BUILD_THETA_DRIVER, test "x$theta_LIBS" != "x")
+
+# Eloquence driver  Setup
+
+AC_ARG_WITH(eloquence_dir,
+            AC_HELP_STRING([--with-eloquence-dir=PATH],
+                           [Specify path to Eloquence]),
+            [if test "$withval" = "no" ; then
+                 build_eloquence=no;
+             fi])
+
+if test x$build_eloquence != xno ; then
+    if test x$with_eloquence_dir != x ; then
+        eloquence_INCLUDEDIR="$with_eloquence_dir/include"
+        eloquence_LIBDIR="$with_eloquence_dir/redist/common_module"
+    fi
+    AC_SUBST(eloquence_INCLUDEDIR)
+    AC_SUBST(eloquence_LIBDIR)
+fi
+AM_CONDITIONAL(BUILD_ELOQUENCE_DRIVER, test "x$eloquence_LIBDIR" != "x")
+
+# Check to see if we should build the eSpeak driver
+AC_ARG_WITH(espeak_dir,
+            AC_HELP_STRING([--with-espeak-dir=PATH],
+                           [Specify path to eSpeak]),
+            [if test "$withval" = "no" ; then
+                 build_espeak=no;
+             fi])
+
+if test x$build_espeak != xno ; then
+    if test x$with_espeak_dir != x ; then
+        espeak_LIBS="-L$with_espeak_dir/lib -lespeak"
+        espeak_INCLUDES="$with_espeak_dir/include/espeak"
+    else
+        AC_CHECK_LIB(espeak, espeak_Synth, espeak_LIBS=-lespeak)
+        espeak_INCLUDES="/usr/include/espeak"
+    fi
+    AC_SUBST(espeak_LIBS)
+    AC_SUBST(espeak_INCLUDES)
+fi
+AM_CONDITIONAL(BUILD_ESPEAK_DRIVER, test "x$espeak_LIBS" != "x")
+
+# Java support
+
+AC_ARG_WITH(java_home,
+            AC_HELP_STRING([--with-java-home=PATH],
+                           [Use the jdk at PATH]),
+            [if test "$withval" = "no" ; then
+                 java_home_defined=no;
+             fi])
+
+if test x$java_home_defined != xno ; then
+    if test "x$with_java_home" != "x" ; then
+        JAVA_HOME=$with_java_home
+    else
+        JAVA_HOME=`which javah | sed -e "s/\/bin\/javah//"`
+    fi
+fi
+
+# Find the java executeable
+
+if test "x$JAVA_HOME" != "x" ; then
+  AC_CHECK_FILE("$JAVA_HOME/bin/java", JAVA="$JAVA_HOME/bin/java",
+	[JAVA="no"
+	 AC_MSG_NOTICE([Java executeable not found])])
+else
+  AC_CHECK_PROG(JAVA, java, java, no)
+fi
+
+# Find the java compiler
+
+if test "x$JAVA_HOME" != "x" ; then
+  AC_CHECK_FILE("$JAVA_HOME/bin/javac", JAVAC="$JAVA_HOME/bin/javac",
+	[JAVAC="no"
+	 AC_MSG_NOTICE([Java Compiler not found])])
+else
+  AC_CHECK_PROG(JAVAC, javac, javac, no)
+fi
+if test "x$JAVAC" != "x" ; then
+  javac_version=`$JAVAC -version 2>&1 | sed -e "1s/javac //" -e "1q" `
+  echo JAVAC VERSION $javac_version
+  JAVAC="$JAVAC -source 1.4"
+fi
+
+# Find the Java Header Generator
+
+if test "x$JAVA_HOME" != "x" ; then
+  AC_CHECK_FILE("$JAVA_HOME/bin/javah", JAVAH="$JAVA_HOME/bin/javah",
+	[JAVAH="no"
+	 AC_MSG_NOTICE([Java Header Generator not found])])
+else
+  AC_CHECK_PROG(JAVAH, javah, javah, no)
+fi
+
+# Find Java's IDL compiler
+
+if test "x$JAVA_HOME" != "x" ; then
+  AC_CHECK_FILE("$JAVA_HOME/bin/idlj", IDLJ="$JAVA_HOME/bin/idlj",
+	[IDLJ="no"
+	 AC_MSG_NOTICE([Java IDL Code Generator not found])])
+else
+  AC_CHECK_PROG(IDLJ, idlj, idlj, no)
+fi
+
+# Find the jar utiility
+
+if test "x$JAVA_HOME" != "x" ; then
+  AC_CHECK_FILE("$JAVA_HOME/bin/jar", JAR="$JAVA_HOME/bin/jar",
+	[JAR="no"
+	 AC_MSG_NOTICE([Jar utility not found])])
+else
+  AC_CHECK_PROG(JAR, jar, jar, no)
+fi
+
+# Find the Java Access Bridge
+
+AC_ARG_WITH(jab_dir,
+            AC_HELP_STRING([--with-jab-dir=PATH],
+                           [Specify path to Java Access Bridge]),
+            [if test "$withval" = "no" ; then
+                 jab_dir_defined=no;
+             fi])
+
+if test x$jab_dir_defined != xno ; then
+    if test "x$with_jab_dir" != "x" ; then
+        AC_CHECK_FILE("$with_jab_dir/gnome-java-bridge.jar", JAB="$with_jab_dir/gnome-java-bridge.jar",
+                      [AC_MSG_NOTICE([Java Access Bridge not found])])
+    else
+        AC_CHECK_FILE("$prefix/share/jar/gnome-java-bridge.jar", JAB="$prefix/share/jar/gnome-java-bridge.jar",
+                      [AC_MSG_NOTICE([Java Access Bridge not found])])
+    fi
+fi
+
+AC_SUBST(JAVA_HOME)
+AC_SUBST(JAVA)
+AC_SUBST(JAVAC)
+AC_SUBST(JAVAH)
+AC_SUBST(IDLJ)
+AC_SUBST(JAR)
+AC_SUBST(JAB)
+
+# conditional to build java package
+
+if test "x$JAVAC" = "xno" || \
+   test "x$JAVA" = "xno" || \
+   test "x$IDLJ" = "xno" || \
+   test "x$JAB" = "xno" ; then
+   JAVA_SUPPORT="false"
+else
+   JAVA_SUPPORT="true"
+fi
+AC_SUBST(JAVA_SUPPORT)
+AM_CONDITIONAL(BUILD_JAVA_PACKAGE, test "x$JAVA_SUPPORT" = "xtrue")
+
+AC_SUBST(BUILD_JAVA_PACKAGE)
+
+# GNOME Speech Java Package location
+
+GNOME_SPEECH_JAR_DIR="$prefix/share/jar"
+GNOME_SPEECH_INSTALLED_CLASSPATH="$GNOME_SPEECH_JAR_DIR/gnome-speech.jar:$JAB"
+GNOME_SPEECH_CLASSPATH="$GNOME_SPEECH_JAR_DIR/java/gnome-speech.jar:$JAB"
+AC_SUBST(GNOME_SPEECH_JAR_DIR)
+AC_SUBST(GNOME_SPEECH_INSTALLED_CLASSPATH)
+AC_SUBST(GNOME_SPEECH_CLASSPATH)
+
+# FreeTTS Setup
+
+AC_ARG_WITH(freetts_dir,
+            AC_HELP_STRING([--with-freetts-dir=PATH],
+                           [Specify path to FreeTTS]),
+            [if test "$withval" = "no" ; then
+                 build_freetts=no;
+             fi])
+
+if test x$build_freetts != xno ; then
+    if test x$with_freetts_dir != x ; then
+        if test x$JAVA_SUPPORT != xtrue; then
+            AC_MSG_ERROR([Java support is required to build the FreeTTS driver])
+        fi
+        FREETTS_JAR_DIR="$with_freetts_dir"
+        AC_SUBST(FREETTS_JAR_DIR)
+        FREETTS_CLASSPATH="$FREETTS_JAR_DIR/freetts.jar:$FREETTS_JAR_DIR/en_us.jar:$FREETTS_JAR_DIR/cmulex.jar:$FREETTS_JAR_DIR/cmu_us_kal.jar"
+        AC_SUBST(FREETTS_CLASSPATH)
+        case "$host" in
+        *-solaris*)
+            freetts_driver_type_solaris=true;;
+        *)
+            freetts_driver_type_linux=true;;
+        esac
+    fi
+fi
+AM_CONDITIONAL(BUILD_FREETTS_DRIVER_LINUX, test x$freetts_driver_type_linux = xtrue)
+AM_CONDITIONAL(BUILD_FREETTS_DRIVER_SOLARIS, test x$freetts_driver_type_solaris = xtrue)
+AM_CONDITIONAL(BUILD_FREETTS_DRIVER, test "x$FREETTS_JAR_DIR" != "x")
+
+# FreeTTS Driver
+
+FREETTS_DRIVER_JAR_DIR="$prefix/share/jar"
+FREETTS_DRIVER_DATA_DIR="${prefix}/share/$PACKAGE/drivers/freetts"
+FREETTS_DRIVER_CLASSPATH="$FREETTS_DRIVER_JAR_DIR/freetts-synthesis-driver.jar"
+AC_SUBST(FREETTS_DRIVER_JAR_DIR)
+AC_SUBST(FREETTS_DRIVER_DATA_DIR)
+AC_SUBST(FREETTS_DRIVER_CLASSPATH)
+
+AC_OUTPUT([
+Makefile
+gnome-speech-1.0.pc
+gnome-speech.spec
+INSTALL
+gnome-speech/Makefile
+idl/Makefile
+java/Makefile
+drivers/Makefile
+drivers/dectalk/Makefile
+drivers/dectalk/GNOME_Speech_SynthesisDriver_Dectalk.server
+drivers/swift/Makefile
+drivers/swift/GNOME_Speech_SynthesisDriver_Swift.server
+drivers/theta/Makefile
+drivers/theta/GNOME_Speech_SynthesisDriver_Theta.server
+drivers/eloquence/Makefile
+drivers/eloquence/GNOME_Speech_SynthesisDriver_Eloquence.server
+drivers/festival/Makefile
+drivers/festival/GNOME_Speech_SynthesisDriver_Festival.server
+drivers/freetts/Makefile
+drivers/freetts/native/Makefile
+drivers/freetts/java/Makefile
+drivers/freetts/java/org/Makefile
+drivers/freetts/java/org/GNOME/Makefile
+drivers/freetts/java/org/GNOME/Speech/Makefile
+drivers/freetts/freetts-synthesis-driver
+drivers/freetts/GNOME_Speech_SynthesisDriver_FreeTTS.server
+drivers/speech-dispatcher/Makefile
+drivers/speech-dispatcher/GNOME_Speech_SynthDriver_Speech_Dispatcher.server
+drivers/viavoice/Makefile
+drivers/viavoice/GNOME_Speech_SynthesisDriver_Viavoice.server
+drivers/loquendo/Makefile
+drivers/loquendo/GNOME_Speech_SynthesisDriver_Loquendo.server
+drivers/espeak/Makefile
+drivers/espeak/GNOME_Speech_SynthesisDriver_Espeak.server
+test/Makefile
+doc/Makefile
+])
+
+
+echo "
+
+GNOME Speech $GNOME_SPEECH_VERSION Build Setup:"
+
+echo ""
+if test "x$build_festival" = "xtrue" ; then
+echo "Build Festival Driver:	yes"
+else
+echo "Build Festival Driver:	no"
+fi
+
+echo ""
+if test "x$build_speech_dispatcher" = "xtrue" ; then
+echo "Build Speech Dispatcher Driver:	yes"
+else
+echo "Build Speech Dispatcher Driver:	no"
+fi
+
+echo ""
+if test "x$dectalk_LIBS" != "x" ; then
+echo "Build DECTalk Driver:	yes"
+echo "DECTalk libs:		$dectalk_LIBS"
+else
+echo "Build DECTalk Driver:	no"
+fi
+
+echo ""
+if test "x$swift_LIBS" != "x" ; then
+echo "Build Swift Driver:	yes"
+echo "Swift libs:		$swift_LIBS"
+else
+echo "Build Swift Driver:	no"
+fi
+
+echo ""
+if test "x$theta_LIBS" != "x" ; then
+echo "Build Theta Driver:	yes"
+echo "Theta libs:		$theta_LIBS"
+else
+echo "Build Theta Driver:	no"
+fi
+
+echo ""
+
+if test x$eloquence_LIBS != x ; then
+echo "Build Eloquence Driver:	yes"
+echo "Eloquence libs:		$eloquence_LIBS"
+else
+echo "Build Eloquence Driver:	no"
+fi
+
+echo ""
+if test "x$viavoice_LIBS" != "x" ; then
+echo "Build Viavoice Driver:	yes"
+echo "Viavoice libs:		$viavoice_LIBS"
+else
+echo "Build Viavoice Driver:	no"
+fi
+
+echo ""
+if test "x$loquendo_LIBS" != "x" ; then
+echo "Build Loquendo Driver:	yes"
+echo "Loquendo libs:		$loquendo_LIBS"
+else
+echo "Build Loquendo Driver:	no"
+fi
+
+echo ""
+if test "x$espeak_LIBS" != "x" ; then
+echo "Build eSpeak Driver:      yes"
+echo "eSpeak libs:              $espeak_LIBS"
+else
+echo "Build eSpeak Driver:      no"
+fi
+
+echo ""
+if test "x$JAVA_SUPPORT" = "xtrue"; then
+echo "Java Support:		yes"
+echo "Java:			$JAVA"
+echo "Javac:			$JAVAC"
+echo "Idlj:			$IDLJ"
+echo "Jar:			$JAR"
+echo "Access Bridge Location:	$JAB"
+else
+echo "Java Support:		no"
+fi
+
+echo ""
+if test "x$FREETTS_JAR_DIR" != "x" ; then
+echo "Build FreeTTS Driver:	yes"
+if test x$freetts_driver_type_linux != x ; then
+echo "FreeTTS Driver Type:	    Linux"
+fi
+if test "x$freetts_driver_type_solaris" != "x" ; then
+echo "FreeTTS Driver Type:	    Solaris"
+fi
+echo "FreeTTS Jar Directory:	$FREETTS_JAR_DIR"
+else
+echo "Build FreeTTS Driver:	no"
+fi
+
+echo ""

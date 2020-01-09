@@ -1,0 +1,368 @@
+(top)
+gnome-speech 0.4.25:
+
+* Respin due to use of incompatible libtool for 0.4.24.
+
+gnome-speech 0.4.24
+
+* drivers/espeak/espeakspeaker.c: Fix for bug #571217 - espeak driver
+  parameter ranges do not match espeak
+
+* gnome-speech/speaker.c, drivers/eloquence/eloquencespeaker.c: Fix
+  for bug #560439 - GNOME Goal: Remove deprecated GLib symbols.  NOTE:
+  I don't have the eloquence package (it's a commercial system), so I
+  was unable to verify the changes made to that file.
+
+gnome-speech 0.4.23:
+
+* drivers/espeak/Makefile.am Fix for bug #568786 - Trivial build patch
+  (Vincent Untz)
+
+* test/test-speech.c: Fix for bug #563577 - GNOME Goal: Clean up GLib
+  and GTK+ includes (Luis Menina)
+
+gnome-speech 0.4.22:
+
+* drivers/swift/swiftsynthesisdriver.c: fix for bug #559583 - Swift
+  synthesis driver causes Python client to get "TypeError: could not
+  demarshal return value" on call to getAllVoices.
+
+gnome-speech 0.4.21:
+
+* drivers/espeak/espeaksynthesisdriver.c: fix for bug #545896 - eSpeak
+  segmentation fault.
+
+gnome-speech 0.4.20:
+
+* drivers/espeak/*: fix for bug 535493 - eSpeak driver can
+  block.  The fix adds a list mechanism to handle utterances 
+  to be spoken and then processes them on the gidle thread.
+  Also raised the maximum speech rate for eSpeak.
+
+gnome-speech 0.4.19:
+
+* configure.in: be smarter about automatically finding espeak
+
+* drivers/espeak/Makefile.am: remove libstdc++.  It is not needed
+  and makes the Solaris build fail.
+
+gnome-speech 0.4.18:
+
+* Fix for bug 508439 - Gnome speech Espeak driver will not compile
+  with Espeak 1.30 (Thanks David Csercsics!!)
+
+gnome-speech 0.4.17:
+
+* Fix for bug 503058 - Swift driver build failure on Solaris.  With
+  this fix, Cepstral/Swift works on Solaris Express Community Edition
+  build 79.
+
+gnome-speech 0.4.16:
+
+* Fix for bug 458990 - Update max speech rate in eSpeak driver 
+  (Gilles Casse)
+
+gnome-speech 0.4.15:
+
+* Fix for bug 454954 - Compatibility with eSpeak >=1.27 (Gilles Casse)
+
+gnome-speech 0.4.14:
+
+* Fix for bug 443989 - when building Java platform support, add -cp
+  option to work in the presence of environments where CLASSPATH might
+  be set
+
+* Fix for bug 448184 - viavoicesynthesisdriver.c:718: warning: control
+  reaches end of non-void function (Mario Lang)
+
+gnome-speech 0.4.13:
+
+* Fix for bug 440169 - swift driver hardcodes voice language to en_US
+  (Mario Lang)
+
+gnome-speech 0.4.12:
+
+* Fix for bug 437867 to support festival languages without dialects.
+
+gnome-speech 0.4.11:
+
+* Fix for bug 416586 to call espeak_Info for eSpeak version
+  information (Gilles Casse)
+
+gnome-speech 0.4.10:
+
+* Fix for bug 409573 to have eSpeak driver also look for LANG when
+  determining the default language. (Gilles Casse)
+	
+gnome-speech 0.4.9:
+
+* Fix for bug 398916 to help select the Viavoice Chinese voices. Also
+  fixed a memory leak with the driver. (Gilles Casse)
+
+* Fix for bug 399512 to handle config parameters better. (Leonardo Boshell)
+
+* Fix for bug 403763 to include math library when building driver
+  for Swift. (Willie Walker)
+
+gnome-speech 0.4.8:
+
+* Brand new driver for eSpeak (http://espeak.sourceforge.net).
+Many many thanks to Gilles Casse for his contribution here!!!
+
+* Fix for bug 321658 to allow ibmtts is unable to select/change voice
+of a different language.  Many many thanks to Gilles Casse for his
+contribution here!!!
+
+gnome-speech 0.4.7:
+
+* Add support for Cepstral Swift driver.  There are known problems
+with this support.  In particular, there are audio artifacts 
+(chirps and pops) when speech is interrupted.  We have a support
+request into Cepstral for help with this: Support Ticket #6297.
+
+gnome-speech 0.4.6:
+
+* RFE 350389: add in Loquendo driver from ONCE (Thanks Juan Ramon
+  Jimenez from ONCE!).
+
+gnome-speech 0.4.5:
+
+* Fix for bug 353322: fix crash/hang in DECtalk synthesis driver.
+
+gnome-speech 0.4.4:
+
+* Fix for bug 326818: escape the \ character so it is not interpreted
+as a line continuation character by the festival shell.
+
+* Fix for bug 352165: use "-f" flag to rm files when doing a clean.
+
+gnome-speech 0.4.3:
+
+* Fix for bug 349730: do not abort festival synthesis driver when it
+cannot convert a string to the encoding expected by the voice being
+used by festival.
+
+gnome-speech 0.4.2:
+
+* Fix for bug 347357: convert UTF-8 to ISO8859-1 before sending text to
+  DECtalk engine
+
+* Fix for bug 348240: convert UTF-8 to ISO8859-1 before sending text to
+  IBMTTS (a.k.a., ViaVoice) engine (thanks Javier!)
+
+* Fix for bug 347124: remove LT_VERSION_INFO since it is only available
+  for libraries (thanks dmacks!)
+
+gnome-speech 0.4.1:
+
+* Partial fix for bug 144457: add "punctuation mode" parameter to DECtalk
+  synthesis driver. The supported modes are as follows:
+
+    0 = none
+    1 = some
+    2 = most
+    3 = all
+
+* Fix for bug 341405: don't core dump if festival is not installed on
+  machine.
+	
+* Fix for bug 141516: allow character encoding to be dynamically
+  determined from the voice.  Credit to Milan Zamazal as well for the
+  creation of the "coding" attribute convention for festival voices.
+	
+* Fix for bug 341990: eliminate compilation warning in festival synthesis
+  driver.
+
+----------
+gnome-speech 0.4.0:
+
+* Fix for bug 321216: support UTF-8 encoding (Chaitanya Kamisetty)
+
+* Fix for bug 337151: quit when the festival process dies (Remus Draica)
+
+* Fix for bug 341744: turn phoneme mode off in dectalk driver (Willie Walker)
+
+* Fix for bug 332250: dectalk driver compilation warnings (Willie Walker)
+
+* Fix for bug 332247: dectalk driver can hang on exit (Willie Walker)
+
+* Fix for bug 329444: add speech dispatcher driver (Hynek Hanke)
+
+----------
+gnome-speech 0.3.9:
+
+* Fix for bug 319421: ibmtts hardcoded to en_US locale (Bill Abt)
+
+* For for bug 319875: Add eciInsertIndex to viavoice driver (Bill Abt)
+
+* Fix for bug 320013: Add more parameters to ibmtts driver (Bill Abt)
+
+* Fix for build problem on Solaris (Rich Burridge)
+
+* Fix for bug 142354: FreeTTS driver exits when refcount goes to 0 instead
+  of living forever (Willie Walker)
+
+* Fix for bug 313652: FreeTTS build fix (Bernard Leak)
+
+* Fix for bug 319980: test-speech now uses selected gender instead of
+  hardcoding to male (Willie Walker)
+
+* Fix for bug 314736: Cygwin ports patch (Cygwin Ports maintainer)
+
+* Fix for bug 314840: Corrected the use of the rate and pitch
+  parameters for ibmtts driver so that they are absolute and not
+  relative values (IBM)
+
+* Provide different method for finding the Java virtual machine for
+  freetts-synthesis-driver (Willie Walker)
+
+* Fix for bug 319168: FreeTTS streaming audio player could not be used
+  (Willie Walker)
+
+----------
+gnome-speech 0.3.8:
+
+* Fix for bug 305489: Festival driver in gnome-speech-0.3.7 seg faults
+  (Willie Walker)
+
+* Fix for bug 308468: #include <sys/socket.h>, and do not declare 
+  variable after statement (Behdad Esfahbod)
+
+* FreeTTS driver now says "FreeTTS synthesis driver running..." instead
+  of saying it is *not* running (Willie Walker)
+
+----------
+gnome-speech 0.3.7:
+
+* FreeTTS driver now includes and uses a user_addenda.txt pronunciation
+  lexicon addenda to support characters from the extended ISO8859-1 character
+  set as well as the unicode currency block - bug 163805 (Willie Walker)
+
+* Automatic detection of voices for festival driver - part of bug 141516
+  (Fernando Herrera)
+
+* Fixes for bug 301086 (Willie Walker), bug 141516 (Bill Haneman and Fernando
+  Herrera), bug 169805 (Bill Haneman), and bug 167810 (Oana Serb)
+
+----------
+gnome-speech 0.3.6:
+
+* Festival driver now supports callbacks and end-of-speech markers - thanks to
+  Oana Serb of BAUM Retec.
+
+* FreeTTS driver is less intolerant of nonstandard JAVA environments at 
+  build time (Callum McKenzie).
+
+* IBM ViaVoice driver updated to work with new Linux ViaVoice runtime
+  (Marc Mulcahy)
+
+* Critical fixes for FreeTTS 1.2 driver which could cause speech to fail
+  (Marc)
+
+gnome-speech 0.3.5:
+
+* Improved locale matching when creating a speaker -- thanks billh
+
+----------
+gnome-speech 0.3.4:
+
+* Better LOCALE matching for getVoices queries,
+  for FreeTTS, Theta, and DecTalk drivers.
+* CLASSPATH fix for FreeTTS driver.
+* Use volume range of 0 - 100% instead of 0 - 1.0, for
+  consistency, in FreeTTS Speakers.
+* FreeTTS driver getVoices() command now works (formerly, 
+  it seems only getAllVoices() worked for FreeTTS.)
+* Better error reporting in test-speech.
+* test-speech now asks for gender and locale choices
+  before presenting voice list.
+
+gnome-speech 0.3.3:
+* FreeTTS driver now requires FreeTTS 1.2beta.
+
+----------
+
+gnome-speech 0.3.2:
+
+* Drivers now take into account the language specified in getVoices
+  and the createSpeaker calls.
+
+-----------
+
+gnome-speech 0.3.1:
+
+* Fix some driver strings to fix activation errors.
+
+-----------
+
+gnome-speech 0.3.0:
+
+* Updated VoiceInfo structure such that language is a string rather
+  than an int.
+
+-----------
+
+gnome-speech 0.2.8:
+
+* Fixed FreeTTS build issues
+* Fixed compiler warnings
+
+-----------
+
+gnome-speech 0.2.7:
+
+* Fixed libtool versioning
+* Enhanced build checks
+* Fixed bad escaping of strings in the Festival driver.
+* Fixed refcounting issue in the FreTTS driver.
+
+-----------
+
+gnome-speech 0.2.6:
+
+* More build fixes.
+
+-----------
+
+gnome-speech 0.2.5:
+
+* Fix build.
+
+-----------
+
+What's new in gnome-speech 0.2.4:
+
+* Driver added for Cepstral Theta.
+
+* All existing drivers were rewritten to share one instance of the TTS
+  engine among all GNOME Speech Speaker objects created by the driver.
+  Drivers which were rewritten include:
+	* IBM Viavoice
+	* Fonix DECTalk
+	* Festival
+	* FreeTTS
+
+* All drivers were hacked to shutdown the server executeable when the
+  SynthesisDriver object is destroyed.
+
+* Memory leaks were fixed in test-speech.  Also two more tests were
+  added:
+	* Interrupt test-- tests speech interruption
+	* Wait test-- tests the driver's ability to wait for speech to
+	  finish.
+
+-----------
+
+What's new in gnome-speech 0.2.1:
+
+* Improvements to prevent installation of .server files for drivers that aren't built.
+
+* Work with newer autotools.
+
+* Added a new driver for Eloquence, DECTalk.
+
+* Build fixes and bug fixes :-)
+
+
+-----------
+No news is good news.

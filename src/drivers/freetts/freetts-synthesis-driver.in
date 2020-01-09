@@ -1,0 +1,34 @@
+#!/bin/sh
+
+CLASSPATH=@GNOME_SPEECH_INSTALLED_CLASSPATH@:@FREETTS_CLASSPATH@:@FREETTS_DRIVER_CLASSPATH@
+LD_LIBRARY_PATH=@prefix@/lib
+export CLASSPATH
+export LD_LIBRARY_PATH
+
+# Find Java.  This first checks to see if the user has JAVA_HOME
+# set and uses that if possible.  It then checks for the JAVA
+# that was used as part of the ./configure and build and uses 
+# that if possible.  Finally, it falls back onto whatever the
+# system has in place.  Arguably, one might want to use what 
+# is on the system, but some systems ship Java platform 
+# implementations that do not work (e.g., gcj on RedHat), so 
+# they're better off tried last.
+#
+if test "x$JAVA_HOME" != "x";  then
+	JAVA="$JAVA_HOME/bin/java"
+elif test -x "@JAVA@"; then
+	JAVA="@JAVA@"
+else
+	JAVA="`which java`"
+fi
+
+if test "`uname -s`" = "SunOS"; then
+    AUDIOPLAYER="-Dft_audio_player=streaming -Dcom.sun.speech.freetts.audio.AudioPlayer.drainDelay=0"
+else
+    AUDIOPLAYER="-Dft_audio_player=clip"
+fi
+
+CMD="$JAVA $AUDIOPLAYER  -Dcom.sun.speech.freetts.audio.AudioPlayer.openFailDelayMs=100 -Dcom.sun.speech.freetts.audio.AudioPlayer.totalOpenFailDelayMs=1500 -Dcom.sun.speech.freetts.lexicon.userAddenda=file://@FREETTS_DRIVER_DATA_DIR@/user_addenda.txt org.GNOME.Speech.FreeTTSSynthesisDriver $1 $2"
+echo $CMD
+$CMD
+

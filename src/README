@@ -1,0 +1,349 @@
+GNOME Speech 0.4.25
+
+1. Introduction
+===============================================================================
+
+This is GNOME Speech version 0.4.25.  It's purpose is to provide a
+simple general API for producing text-to-speech output.  This version
+of gnome-speech *should* be fine for GNOME 2.12 and greater.
+
+
+2. Overview
+===============================================================================
+
+GNOME Speech 0.4 is made up of three basic parts:
+
+	* IDL interface definitions
+	* libgnomespeech - Convenience library for speech driver
+	  development
+	* Java package to aid in developing GNOME Speech drivers in
+	  Java
+	* Sample driver implementations
+
+
+2.1: IDL Interface Definitions
+===============================================================================
+
+The IDL definitions are in the idl subdirectory.  GNOME Speech 0.4
+defines three interfaces:
+
+	* SynthesisDriver: Allows retrieval of general speech
+	  synthesizer properties such as version number-- allows
+	  the creation of speaker objects (see below).
+	* Speaker-- the object used to produce speech-- contains
+	  methods for speaking text and setting and retrieving the speech
+	  parameters of the speaker object.
+	* SpeechCallback-- an interface implemented by the GNOME
+	  Speech to receive speech progress notifications.
+
+
+2.2: libgnomespeech
+===============================================================================
+
+Libgnomespeech is a library which aids in GNOME Speech driver
+development.  It provides convenience functions for specifying what
+parameters are supported by a particular speaker object.
+
+
+2.3 GNOME Speech Java Package
+===============================================================================
+
+If the Java SDK version 1.4.1 is detected when building GNOME Speech,
+gnome-speech.jar is built.  This Java package requires code from the
+java-access-bridge module, and is required to build GNOME Speech
+drivers written in the Java(tm) programming language.
+
+
+2.4: Sample Driver Implementations
+===============================================================================
+
+GNOME Speech 0.4 ships with driver source code for the following
+synthesis engines.  This support also typically works with later
+versions of the given engines, and the version numbers represent what
+we had when we created the associated driver:
+
+	* eSpeak 1.19
+	* Festival Speech Synthesis System 1.4.2
+	* FreeTTS 1.2
+	* IBM ViaVoice TTS RTK 5.1
+	* Speechworks ETI Eloquence SDK
+	* DECtalk Software RT for Linux 4.61
+	* Cepstral Theta 2.3
+	* Cepstral Swift 4.1.4
+        * Speech Dispatcher
+        * Loquendo
+
+The Festival driver has no build-time dependencies, and will be built
+regardless of whether Festival is actually installed on your system.
+The driver has been tested with Festival Version 1.4.2.  The only
+requirement is that the festival binary be in the user's path.
+
+Neither the eSpeak, DECtalk, IBM ViaVoice, Swift, nor Loquendo GNOME
+Speech drivers will not be built unless their associated SDK is
+installed.
+
+To build the FreeTTS GNOME Speech driver, the Java SDK version 1.4.1
+and FreeTTS version 1.2 are required.  If the javac binary can not
+be found or is not in your path, you can specify the --with-java-home
+option when configuring GNOME Speech to tell the build system where to
+find the Java sdk.  In order to build the FreeTTS driver, you must
+tell the build system where to find FreeTTS.   Use the
+--with-freetts-dir configure option to do this.  Note, you should
+specify the path to the directory under tthe FreeTTS root directory
+which contains the FreeTTS jar files.
+
+The GNOME Speech driver for the Fonix DECTalk runtime for Linux will
+be built if the DECTalk libraries are found in the standard locations.
+If the DECTalk software is installed in a nonstandard location, you
+can specify the root of the DECTalk installation with the
+--with-dectalk-dir option.
+
+The GNOME Speech driver for eSpeak will be built if the eSpeak
+libraries are found in the standard locations.  If the eSpeak software
+is installed in a nonstandard location, you can specify the root of
+the eSpeak installation with the --with-espeak-dir option.
+
+The driver for Cepstral's Theta text-to-speech engine will be built if
+the Theta libraries are found in the standard locations.  If Theta is
+installed in a nonstandard location and can not be found by the build
+system, you can specify the root of the Theta installation with the
+--with-theta-dir configuration option.
+
+The driver for Cepstral's Swift text-to-speech engine will be built if
+the Swift libraries are found in the standard locations.  If Swift is
+installed in a nonstandard location and can not be found by the build
+system, you can specify the root of the Swift installation (e.g.,
+/opt/swift) with the --with-swift-dir configuration option.  NOTE:
+make sure /etc/ld.so.conf also contains the directory containing the
+Swift libraries (e.g., /opt/swift/lib).
+
+To build the Eloquence driver, you must specify the directory
+containing the Eloquence software.  You do this with the
+--with-eloquence-dir option.
+
+The driver for IBM's ViaVoice text-to-speech engine will be built if
+the ViaVoice libraries are found in the standard locations.  If IBM's
+ViaVoice engine is installed in a non-standard location, and cannot be
+found by the build system, you can specify the installation location
+(e.g., /opt/IBM/ibmtts) with the --with-viavoice-dir configuration
+option.
+
+To build the Loquendo driver, you must specify the directory
+containing the Loquendo software.  You do this with the
+--with-loquendo-dir option (e.g.,
+--with-loquendo-dir=/opt/Loquendo/LTTS).  In addition, you need to
+copy the Loquendo default.session file to /etc/default.session.
+
+To build the speech dispatcher driver, use the --with-speech-dispatcher
+option.
+
+
+2.4: Building RPMs
+===============================================================================
+
+Building RPMs is largely the responsibility of Linux distributions.
+The following is a note from Ali Sobhi at IBM describing how to do so
+for the gnome-speech driver for IBMTTS.  The raw text from Ali was
+only formatted for this document - no meaningful content was changed.
+Please note that a gnome-speech.spec file exists that encompasses the 
+IBM ViaVoice driver, and that it probably should be used.  However, 
+Ali was gracious enough to offer this helpful procedure, so we've
+included it to help others who build RPMs.
+
+  howto-make-gnome-speech-ibmtts-rpm.txt
+  Author: Ali Sobhi - IBM Corporation
+  Date:   2005-08-18
+
+  How To Make a gnome-speech-ibmtts.rpm
+  =====================================
+  This document describes the complete procedure for creating a binary
+  RPM package to enable Gnome 2.10.x desktop text-to-speech to work
+  with IBM ViaVoice Text-to-Speech (TTS).
+
+  Introduction
+  ============
+  This procedure was performed and tested on an Intel PC with Fedora
+  Core 4.  The goal of this exercise is to be able to generate the 
+  binary RPM as a non-root user. The prerequisite RPMs should be
+  installed as root.
+
+  Prerequisites
+  =============
+  Login as root or "su -" and check and/or update the required RPMs.
+
+  # This is needed by ibmtts_rte.
+  rpm -q compat-libstdc++-296 || yum install compat-libstdc++-296
+
+  # This is needed for building gnome-speech.
+  rpm -q gnome-common || yum install gnome-common
+
+  # rpm-4.4.1-22 or new required, if older version, then upgrade
+  rpm -q rpm || yum update rpm
+
+  You also need to have ibmtts interfaces installed in order to
+  compile the gnome-speech to use ibmtts.
+
+  IBM ViaVoice TTS package:
+
+  ibmtts_rte-6.7-4.2.i386.rpm 
+  ibmtts_rte_En_US-6.7-4.0.i386.rpm
+
+  Setting up the RPM directory structure
+  ======================================
+
+  Login as a non-root user (ie., "build"), then run the following
+  commands to create a shadow tree of the rpm build heirarchy.
+
+  mkdir ~/rpmwork
+  cd ~/rpmwork
+  lndir /usr/src/redhat
+
+  Making gnome-speech
+  ===================
+  Checkout gnome-speech and build in the newly created
+  "~/rpmwork/SOURCES".
+
+  cd ~/rpmwork/SOURCES
+  export CVS_RSH=ssh
+  export CVSROOT=:pserver:anonymous@anoncvs.gnome.org:/cvs/gnome
+  cvs -z3 -q checkout -P -A gnome-speech
+  cd gnome-speech
+  ./autogen.sh
+  ./configure --prefix=/usr
+  make
+  DESTDIR=~/lap/rpmwork/BUILD make install
+
+  At this point you will notice that the directory
+  "~/rpmwork/BUILD/usr" is populated. There are only two files that we
+  are interested in which will be packaged together as a binary RPM:
+
+  1) usr/bin/viavoice-synthesis-driver
+  2) usr/lib/bonobo/servers/GNOME_Speech_SynthesisDriver_Viavoice.server
+
+  Packaging into a binary RPM
+  ============================
+  Put the following two lines in the "~/.rpmmacros".
+
+  %_topdir /home/build/lap/rpmwork
+  %_unpackaged_files_terminate_build 0
+
+  Copy gnome-speech-ibmtts.spec into "~/rpmwork/SPECS/gnome-speech-ibmtts.spec". 
+  Then type the following commands:
+
+  cd ~/lap/rpmwork/SPECS
+  rpmbuild -bb gnome-speech-ibmtts.spec
+  # <rpmbuild is doing its work> ...
+
+  ls ~/lap/rpmwork/RPMS/i386
+  rpm -qpilR ~/lap/rpmwork/RPMS/i386/gnome-speech-ibmtts-2.1-1.i386.rpm
+
+  If everything is OK and you have no errors, the last command lists
+  the RPM information for:
+
+  "gnome-speech-ibmtts-2.1-1.i386.rpm".
+
+  You have successfully created a binary RPM to enable gnome-speech to
+  use IBM TTS.
+
+  Installing gnome-speech-ibmtts-*.rpm
+  ==================================== 
+  Copy the newly created gnome-speech-ibmtts-*.rpm to a FC4 machine
+  which has the IBM TTS (not ibmtts-devel) installed. Note that
+  initially "test-speech" does not show that ibmtts-viavoice is
+  available as a TTS.  As user root install the newly created rpm.
+
+  rpm -iv gnome-speech-ibmtts-2.1-1.i386.rpm
+
+  Now try "test-speech" and you should see the ibmtts-viavoice as one
+  of two choices (in addition to Festival) for your TTS selection.
+
+  Final note
+  ==========
+
+  Of course you have already realized that all of the above steps can
+  be nicely written in to a shell script and save you some typing and
+  avoiding the mistyping the commands and other errors, right? Well,
+  that's left as an exercise to the reader :-)
+
+2.4.1: Sample spec file for IBMTTS
+===============================================================================
+
+The following is the sample spec file referred to above.  Please also
+refer to the gnome-speech.spec file, which encompasses the following
+as well as the entries needed for a variety of other gnome-speech
+drivers.
+
+#
+######################################################################
+# File:		gnome-speech-ibmtts.spec
+# Version:	3.5
+# Date:	        Wed Jul 27 13:41:01 CDT 2005
+# Author:	Ali Sobhi - IBM Research - Accessibility
+#
+# Description:
+#	RPM spec file for packaging IBM Via Voice components of gnome-speech
+########################################
+# 
+# the rpm file can be found under RPMS/i386 :-)
+#    rpm -qpil <rpm_file>			to get info on the package
+#    rpm -qp --qf "${PREFIXES}\n" <rpm_file>	to see the prefix 
+# 
+# when installing this package, it would install in /usr, to install in
+# a different directory use the following
+#    rpm -vhi --prefix <new-dir> <rpm-package>
+#
+########################################
+# can put the following in this spec file:
+# %define _unpackaged_files_terminate_build 0
+#
+# Put the following two lines in the ~/.rpmmacros
+# 
+# %_topdir        /home/build/lap/rpmwork
+# %_unpackaged_files_terminate_build 0
+######################################################################
+#
+Name:		gnome-speech-ibmtts
+Version:	2.1
+Release:	1
+Summary:	IBM Text-to-Speech (TTS) enablement for Gnome Speech
+Group:		Application/Sound
+License:	CPL
+Vendor:		IBM Corp
+URL:		http://cvs.gnome.org/viewcvs/gnome-speech/
+Packager:	Ali Sobhi <sobhi@us.ibm.com>
+AutoReqProv:	0
+Provides:	Text-to-Speech
+Requires:	gnome-speech, ibmtts_rte, ibmtts_rte_En_US
+ExclusiveArch:	i386
+ExclusiveOS:	linux
+BuildRoot:	%{_builddir}
+Prefix:		/usr
+
+
+%description
+Enable Gnome Speech to use the installed IBM ViaVoice Text-to-Speech (tts)
+ Components used in producing this package includes
+ Gnome 2.10.x branch built by jhbuild
+ ibmtts_rte-6.7-4.2
+ ibmtts_rte_En_US-6.7-4.0
+ 
+
+%prep
+pwd
+rm -f %{_srcrpmdir}/*
+rm -f %{_rpmdir}/%{_arch}/%{name}-%{version}-%{release}.%{_arch}.rpm
+echo %{_builddir}
+echo $RPM_BUILD_ROOT
+echo %{_arch}/%{name}-%{version}-%{release}.%{_arch}.rpm
+echo Prep done
+
+%build
+echo Build done
+
+%install
+echo Install done in $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+/usr/bin/viavoice-synthesis-driver
+/usr/lib/bonobo/servers/GNOME_Speech_SynthesisDriver_Viavoice.server
